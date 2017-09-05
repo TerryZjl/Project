@@ -1,0 +1,50 @@
+<html>
+<head>
+<title>www.knowsky.com</title>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<style>
+input {border:1px solid #999999;background-color:white;height:18px}
+</style>
+<script>
+function runEx(){
+var winEx2 = window.open("", "winEx2", "width=500,height=300,status=yes,menubar=no,scrollbars=yes,resizable=yes"); winEx2.document.open("text/html", "replace"); 
+winEx2.document.write(unescape(event.srcElement.parentElement.children[0].value)); 
+winEx2.document.close(); 
+}
+function saveFile()
+{
+  var win=window.open('','','top=10000,left=10000');
+  win.document.write(document.all.asdf.innerText)
+  win.document.execCommand('SaveAs','','e:\\knowsky\\test.htm')
+  win.close();
+}
+function paste()
+{asdf.focus()
+document.execCommand("Paste")}
+</script>
+</head>
+<body bgcolor="#006699" text="#000000" scroll=auto onLoad="paste()">
+<div align="center"> 
+  <p>
+    <textarea name="textfield" id="asdf" style="width:90%;background-color: black;border:'1px solid #999999';color:white;font-family:Verdana" rows="20" wrap="VIRTUAL">
+</textarea>
+    <br>
+    <br>
+    <input type=button name=Button value=运行代码 onClick=runEx()>
+    <input type=button name=Button value=粘贴 onClick=paste()>
+    <input type=button name=Button value=全选 onClick=asdf.select()>
+    <input type=button name=Button value=清空 onClick="asdf.value=''">
+    <input type=button onClick="saveFile();" value='保存代碼'>
+</div> 
+<form action="/cgi_bin/mathcgi" method="POST">
+First data:<br>
+<input type="text" name="data1" value="1">
+<br>
+Last data:<br>
+<input type="text" name="data1" value="2">
+<br><br>
+<input type="submit" value="Submit">
+</form> 
+</body>
+</html>
+
