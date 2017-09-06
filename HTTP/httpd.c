@@ -2,7 +2,7 @@
 
 const char* status_line = "HTTP/1.0 200 OK\r\n";
 const char* blank_line = "\r\n";
-const char* type_line = "Content-Type: text/html;charset:utf-8";
+const char* type_line = "Content-Type: text/html;charset:utf-8\r\n";
 
 
 
@@ -69,12 +69,11 @@ static int exe_cgi(int sock,const char *path,\
             return 404;
         }
     }
-    printf("121343454565656746746866\n");
     //发送状态行和空行
     send(sock, status_line, strlen(status_line), 0);
-    //send(sock, type_line, strlen(type_line), 0);
+    send(sock, type_line, strlen(type_line), 0);
     send(sock, blank_line, strlen(blank_line), 0);
-    printf("xiangyingbaotou\n");
+    printf("send status_line!!\n");
     //创建管道，用于把进程从浏览器读来的信息通过管道发送个子进程去处理
     //子进程处理完毕数据并通过管道传会给父进程，父进程在传给浏览器
     int input[2];
@@ -102,14 +101,13 @@ static int exe_cgi(int sock,const char *path,\
        //子进程要通过程序替换执行相应的程序，要用到上面从报头得到的参数和方法，如果是post方法，就还有参数长度，则需要把这些信息传递给子进程，我们知道进程不仅可以通过管道通信，子进程还可以继承父进程的环境变量，所以我们把这些信息变量导入到环境变量里,这样子进程就可以用这些信息了。那为什么不要用管道传输呢？因为这些信息的格式不一，不好控制格式，所以要用环境变量比较方便。
         sprintf(method_env, "METHOD=%s", method);
         putenv(method_env);
+            printf("GET query_string:%s\n", query_string);
         printf("method_env: %s \n",method);
         if(strcasecmp(method,"GET") == 0){
             printf("GET query_string:%s\n", query_string);
             sprintf(query_string_env,"QUERY_STRING=%s",query_string);
             putenv(query_string_env);//将string导入到当前的环境中
-        }
-	if(strcasecmp(method,"POST")==0);
-        {
+        }else{
             printf("POST content_lenth:%d \n", content_len); 
             sprintf(content_len_env,"CONTENT_LENGHT=%d",content_len);
             printf("%s\n",content_len_env);
@@ -150,7 +148,7 @@ static void echo_www(int sock, const char* path, int len)
     int fd = open(path,O_RDONLY);
     if(fd < 0)return;
     send(sock, status_line, strlen(status_line), 0);
-    //send(sock, type_line, strlen(type_line), 0);
+    send(sock, type_line, strlen(type_line), 0);
     send(sock, blank_line, strlen(blank_line), 0);
     sendfile(sock, fd, NULL, len);
     close(fd);
@@ -189,6 +187,8 @@ void* handler_request(void *arg)
     char url[SIZE];
     char path[SIZE];
     memset(path, '\0', SIZE);
+    memset(method, '\0', SIZE/10);
+    memset(url, '\0', SIZE);
     printf("1path:%s\n",path);
     int i= 0, j = 0;
     int cgi = 0;
@@ -200,17 +200,17 @@ void* handler_request(void *arg)
     printf("%s", buf);
 #endif
    
-   if( get_line(sock, buf, sizeof(buf)-1)<0){
+    if( get_line(sock, buf, sizeof(buf)-1)<0){
         err_code = 404;
         goto end;
-   }
+    }
    //method
    while(i<sizeof(method)-1 && j < sizeof(buf) && !isspace(buf[j])){
        method[i] = buf[j];
        i++;
        j++;
    }
-   
+  
    while(j< sizeof(buf) && isspace(buf[j])){
        j++;
    }
@@ -225,7 +225,7 @@ void* handler_request(void *arg)
        query_string = url;
        while(*query_string){
            if(*query_string == '?'){
-               query_string = '\0';
+               *query_string = '\0';
                query_string++;
                cgi = 1;
                break;
@@ -233,6 +233,7 @@ void* handler_request(void *arg)
            query_string++;
        }
    }
+   printf("query_string:%s\n",query_string);
    sprintf(path, "wwwroot%s", url);
    if(path[strlen(path)-1]== '/'){
        strcat(path, "index.html");
@@ -241,6 +242,7 @@ void* handler_request(void *arg)
    printf("url path:%s\n",path);
    struct stat st;
    if(stat(path, &st)< 0){
+       printf("not find path\n");
        err_code = 404;
        goto end;        
    }else{
@@ -249,11 +251,12 @@ void* handler_request(void *arg)
        }else if(st.st_mode & S_IXUSR || st.st_mode & S_IXGRP || st.st_mode & S_IXOTH ){//exe
            cgi = 1;
      
-    printf("cgi path:%s\n",path);
+       printf("cgi path:%s\n",path);
        }else{
        }
        if(cgi){
            printf("exe_cgi path:%s\n", path);
+           printf("exe_cgi query_string:%s\n", query_string);
            exe_cgi(sock, path, method, query_string);           
        }else{ 
            printf("echo_www path:%s\n",path);
