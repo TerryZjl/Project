@@ -1,6 +1,6 @@
 ROOT_PATH=$(shell pwd)
 INCLUDE_PATH=$(ROOT_PATH)/lib/include
-LIB_PATH=-L$(ROOT_PATH)/lib/lib
+LIB_PATH=$(ROOT_PATH)/lib/lib
 LIB=mysqlclient
 
 .PHONY:all

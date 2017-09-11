@@ -3,6 +3,9 @@
 
 #include<iostream>
 #include<string>
+#include<stdlib.h>
+#include<stdio.h>
+#include<cstring>
 #include<mysql.h>
 using namespace std;
 
@@ -10,10 +13,10 @@ class SqlApi
 {
 public:
 	SqlApi(const string &_h = "localhost",\
-       		const int &_port=3306,\
-       		const string &_u="mysql",\
-       		const string &_p=".",\
-       		const string &_db="person");
+       const int &_port = 3306,\
+       const string &_u="mysql",\
+       const string &_p=".",\
+       const string &_db="person");
 //	SqlApi(const string &_h,\
 //               const int &_port,\
 //               const string &_u,\
@@ -24,7 +27,6 @@ public:
 	
 	bool connect();
 
-	~SqlApi();
 private:
 	MYSQL *conn; //链接数据库的句柄
         string host; //链接的主机ip

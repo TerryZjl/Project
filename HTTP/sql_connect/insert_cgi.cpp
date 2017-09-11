@@ -13,4 +13,5 @@ int main()
 		return 2;
 	}
 	cout<<" insert"<<endl;
+	return 0;
 }
