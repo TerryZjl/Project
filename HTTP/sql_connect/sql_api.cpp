@@ -15,7 +15,6 @@ SqlApi::SqlApi(const string &_h,\
 	passwd = _p;
 	db = _db;
 	port = _port;	
-	cout<<"init ok"<<host<<user<<db<<port<<endl;
 }
 
 bool SqlApi::connect()
@@ -47,12 +46,48 @@ bool  SqlApi::insert(const string &_name,\
 	sql += "','";
 	sql += _phone;
 	sql += "')";
-	cout<<sql<<endl;
 	if(mysql_query(conn,sql.c_str()) != 0){
 		ret = false;
-		cout<<"insert fasle"<<endl;
+		cout<<"insert fasle"<<" ";
+	}else{
+	cout<<"insert success!!"<<" ";
 	}
-	cout<<"insert success!!"<<endl;
 	cout<<"ret:"<<ret<<endl;
 	return ret;
+}
+
+bool SqlApi::sql_select()
+{
+	bool ret = true;
+	string sql = "select * from information";	
+	if(mysql_query(conn,sql.c_str()) != 0){
+		ret = false;
+		cout<<"select false!!"<<endl;
+	}
+	MYSQL_RES *result = NULL;
+	MYSQL_ROW row = NULL;
+	MYSQL_FIELD *field = NULL;
+	int num = 0;	
+	int i = 0;
+	result = mysql_store_result(conn);//获取查询数据
+	cout<<endl;
+	while(field = mysql_fetch_field(result)){//获取列名
+		printf("%-15s",field->name);
+	}
+	cout<<endl;
+	
+	num = mysql_num_fields(result);  //获取列数
+	while(row = mysql_fetch_row(result)){//获得一行的内容
+		for(i = 0; i < num; i++){
+		printf("%-15s",row[i]?row[i]:"NULL");
+		}	
+		cout<<endl;
+	}	
+	cout<<endl;
+	mysql_free_result(result);//mysql_store_result(conn)读取查询结果并malloc一片内存空间存放查询来的数据，所以在此释放内存。
+}
+
+SqlApi::~SqlApi()
+{
+	mysql_close(conn);
 }
