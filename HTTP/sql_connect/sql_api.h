@@ -12,9 +12,9 @@ using namespace std;
 class SqlApi
 {
 public:
-	SqlApi(const string &_h = "localhost",\
-       const int &_port = 3306,\
-       const string &_u="mysql",\
+	SqlApi(const string &_h,\
+       const int &_port,\
+       const string &_u="root",\
        const string &_p=".",\
        const string &_db="person");
 //	SqlApi(const string &_h,\
@@ -22,7 +22,10 @@ public:
 //               const string &_u,\
 //               const string &_p,\
 //               const string &_db);
-	bool insert(const string &str);
+        bool insert(const string &_name,\
+		     const string &_age,\
+		     const string &_sex,\
+		     const string &_phone);
      	
 	
 	bool connect();
