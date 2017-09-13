@@ -189,7 +189,6 @@ void* handler_request(void *arg)
     memset(path, '\0', SIZE);
     memset(method, '\0', SIZE/10);
     memset(url, '\0', SIZE);
-    printf("1path:%s\n",path);
     int i= 0, j = 0;
     int cgi = 0;
     char *query_string = NULL;
@@ -234,7 +233,9 @@ void* handler_request(void *arg)
        }
    }
    printf("query_string:%s\n",query_string);
+   printf("url:%s\n",url);
    sprintf(path, "wwwroot%s", url);
+   printf("path:%s\n",path);
    if(path[strlen(path)-1]== '/'){
        strcat(path, "index.html");
    } 
