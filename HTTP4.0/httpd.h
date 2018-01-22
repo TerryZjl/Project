@@ -16,10 +16,16 @@
 #include<syslog.h>
 #include<ctype.h>
 #include<sys/stat.h>
+#include<errno.h>
 
-//#define _STDOUT_
-#define WARNING 0
-#define FATAL 1
+#define _STDOUT_ //控制print_log
+//错误级别
+#define SUCCESS 0
+#define NOTICE  1
+#define WARNING 2
+#define ERROR   3
+#define FATAL   4
+
 #define SIZE 1024
 
 void print_log(const char* str,int error,int lines);

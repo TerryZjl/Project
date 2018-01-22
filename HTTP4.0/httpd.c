@@ -7,7 +7,7 @@ const char* type_line = "Content-Type: text/html;charset:utf-8\r\n";
 
 
 void drop_header(int sock)
-{
+{	
     char buf[SIZE];
     int ret = -1;
     do{
@@ -17,11 +17,14 @@ void drop_header(int sock)
 
 void print_log(const char* str,int error,int lines)
 {
-	char *err[2]= {"WARNING","FATAL"};
-	openlog("print_log",LOG_CONS|LOG_PID,LOG_USER);
+#ifdef _STDOUT_ 
+	const char *err[]= {"SUCCESS","NOTICE","WARNING","ERROR","FATAL"};//错误级别
+	printf("lines:[%d] [%s] [%s]\n",lines, err[error%5],str);
 
-	syslog(LOG_INFO,"lines:%d %s %s\n",lines,str,err[error]);
-	closelog();
+	/*openlog("print_log",LOG_CONS|LOG_PID,LOG_USER);
+	syslog(LOG_INFO,"lines:%d %s %s\n",lines,str,err[error%4],);
+	closelog();*/
+#endif
 }
 
 void send_error(int sock,const char* path)
@@ -38,14 +41,13 @@ void send_error(int sock,const char* path)
 		return;
 	}
 
-        int fd = open(path,O_RDONLY);
+    int fd = open(path,O_RDONLY);
 	int ret = 0;
 	if(ret = sendfile(sock,fd,0,st.st_size) < 0)
 	{
 		print_log("Error send error_page---",FATAL,__LINE__);
 	}
-        close(fd);
-
+    close(fd);
 }
 
 void error_response(int sock, int error_code)
@@ -57,32 +59,32 @@ void error_response(int sock, int error_code)
 	{
 	case 401:
 		{
-		send_error(sock,"wwwroot/error/401.html");
+		send_error(sock,"error/401.html");
 		break;
 		}
 	case 400:
 		{
-		send_error(sock,"wwwroot/error/400.html");
+		send_error(sock,"error/400.html");
 		break;
 		}
 	case 403:
 		{
-		send_error(sock,"wwwroot/error/403.html");
+		send_error(sock,"error/403.html");
 		break;
 		}
 	case 404:
 		{
-		send_error(sock,"wwwroot/error/404.html");
+		send_error(sock,"error/404.html");
 		break;
 		}
 	case 500:
 		{
-		send_error(sock,"wwwroot/error/500.html");
+		send_error(sock,"error/500.html");
 		break;
 		}
 	case 503:
 		{
-		send_error(sock,"wwwroot/error/503.html");
+		send_error(sock,"error/503.html");
 		break;
 		}
 	default:
@@ -222,11 +224,17 @@ static int exe_cgi(int sock,const char *path,\
 static void echo_www(int sock, const char* path, int len)
 {
     int fd = open(path,O_RDONLY);
-    if(fd < 0)return;
-    send(sock, status_line, strlen(status_line), 0);
+    if(fd < 0){
+		print_log(strerror(errno),FATAL,__LINE__);
+		return;
+	}
+	send(sock, status_line, strlen(status_line), 0);
     send(sock, type_line, strlen(type_line), 0);
     send(sock, blank_line, strlen(blank_line), 0);
-    sendfile(sock, fd, NULL, len);
+    if(sendfile(sock, fd, NULL, len)<0){
+		print_log(strerror(errno),FATAL,__LINE__);
+		return;
+	}
     close(fd);
 }
 int get_line(int sock, char buf[], int len)
@@ -256,27 +264,27 @@ int get_line(int sock, char buf[], int len)
 
 void* handler_request(void *arg)
 {
-    char buf[SIZE];
+    char buf[SIZE]; //每一行的数据
     int sock = (int)arg;
     int err_code = 200;
     char method[SIZE/10];
-    char url[SIZE];
-    char path[SIZE];
+    char url[SIZE];      
+    char path[SIZE];     
     memset(path, '\0', SIZE);
     memset(method, '\0', SIZE/10);
     memset(url, '\0', SIZE);
     int i= 0, j = 0;
     int cgi = 0;
-    char *query_string = NULL;
+    char *query_string = NULL; //客户提交的参数
     printf("handler_request\n");
-#ifdef _STDOUT_
+/*#ifdef _DEBUG_
     ssize_t s = read(sock, buf, sizeof(buf)-1);
     buf[s] = 0;
     printf("%s", buf);
-#endif
+#endif*/
    
-    if( get_line(sock, buf, sizeof(buf)-1)<0){
-        err_code = 400;
+    if( get_line(sock, buf, sizeof(buf)-1)<=0){
+        err_code = 200;
         goto end;
     }
    //method
@@ -296,6 +304,7 @@ void* handler_request(void *arg)
         i++;
         j++;
    }
+   printf("url:%s\n",url);
    if(strcasecmp(method, "GET") == 0){
        query_string = url;
        while(*query_string){
@@ -309,7 +318,6 @@ void* handler_request(void *arg)
        }
    }
    printf("query_string:%s\n",query_string);
-   printf("url:%s\n",url);
    sprintf(path, "wwwroot%s", url);
    printf("path:%s\n",path);
    if(path[strlen(path)-1]== '/'){
@@ -342,9 +350,10 @@ void* handler_request(void *arg)
        }
    }
 end:
-   if(err_code != 200){
-   	printf("er_code = %d\n",err_code);
-	error_response(sock, err_code);
-   }
-   close(sock);
+    if(err_code != 200){
+		printf("er_code = %d\n",err_code);
+		error_response(sock, err_code);
+    }
+    close(sock);
+	printf("handler_request end!\n");
 }

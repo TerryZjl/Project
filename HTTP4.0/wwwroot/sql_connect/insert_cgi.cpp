@@ -55,9 +55,9 @@ int main()
 	SqlApi s("0",3306);
        
 	char* name = NULL;
-        char* age = NULL;
-        char* sex = NULL;
-        char* phone = NULL;	
+    char* age = NULL;
+    char* sex = NULL;
+    char* phone = NULL;	
 	getdata(name, age,sex,phone);
 		
 	if(s.connect()==false){
