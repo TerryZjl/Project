@@ -29,6 +29,8 @@ output:
 	cp -rf wwwroot/error output
 	cp -rf wwwroot/imag output
 	cp conf/http.conf output/conf
+	cp -rf wwwroot/sust output/wwwroot
+	cp wwwroot/favicon.ico output/wwwroot
 	mv httpd output
 	mv math_cgi output/wwwroot/cgi_bin
 	mv insert_cgi output/wwwroot/cgi_bin

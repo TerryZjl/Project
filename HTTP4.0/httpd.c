@@ -191,8 +191,11 @@ static int exe_cgi(int sock,const char *path,\
             putenv(content_len_env);
         }
 
-
-        printf("PATH:%s\n",path);
+		/*printf("method:%s\n",method);
+		printf("query_string:%s\n",query_string_env);
+		printf("content_lenth:%s\n",content_len);
+        */
+		printf("PATH:%s\n",path);
         dup2(input[0],0);
         dup2(output[1], 1);
         execl(path, path, NULL);//第一个参数是要执行谁，第二个参数在命令行上执。程序替换函数不用出错返回。
@@ -254,7 +257,7 @@ int get_line(int sock, char buf[], int len)
             }
             buf[i++] = c;
         }
-        else{
+    else{
             return -1;
         }
     }
@@ -284,7 +287,7 @@ void* handler_request(void *arg)
 #endif*/
    
     if( get_line(sock, buf, sizeof(buf)-1)<=0){
-        err_code = 200;
+        err_code = 401;
         goto end;
     }
    //method
